@@ -10,17 +10,15 @@ import (
 )
 
 type Response struct {
-	ID string `json:"id"`
-}
-type ResponseError struct {
-	Error string `json:"error"`
+	ID    string `json:"id,omitempty"`
+	Error string `json:"error,omitempty"`
 }
 
 func writeJson(w http.ResponseWriter, data any) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err, ok := data.(error); ok {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ResponseError{Error: err.Error()})
+		json.NewEncoder(w).Encode(Response{Error: err.Error()})
 	} else {
 		json.NewEncoder(w).Encode(Response{ID: fmt.Sprint(data)})
 	}
