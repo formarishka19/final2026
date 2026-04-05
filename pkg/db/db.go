@@ -2,9 +2,7 @@ package db
 
 import (
 	"database/sql"
-	"errors"
-	"log"
-	"os"
+	"fmt"
 
 	_ "modernc.org/sqlite"
 )
@@ -18,31 +16,12 @@ const SCHEMA = `CREATE TABLE IF NOT EXISTS scheduler (
 );
 CREATE INDEX IF NOT EXISTS idx_date ON scheduler (date);`
 
-var db *sql.DB
+var DB *sql.DB
 
 func Init(dbFile string) error {
-
-	_, err := os.Stat(dbFile)
-	if err == nil {
-		db, err = sql.Open("sqlite", dbFile)
-		if err != nil {
-			log.Fatal("error acces to database %w", err)
-		}
-	} else {
-		if errors.Is(err, os.ErrNotExist) {
-			log.Println("creating db file")
-			db, err = sql.Open("sqlite", dbFile)
-			if err != nil {
-				log.Fatal("error acces to database %w", err)
-			}
-			defer db.Close()
-			_, err = db.Exec(SCHEMA)
-			if err != nil {
-				log.Fatal("error generating db schema %w", err)
-			}
-		} else {
-			log.Fatal("error accessing db file, possible no access %w", err)
-		}
+	_, err := DB.Exec(SCHEMA)
+	if err != nil {
+		return fmt.Errorf("error generating db schema %w", err)
 	}
-	return err
+	return nil
 }

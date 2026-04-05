@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 )
 
 type Task struct {
@@ -17,13 +16,7 @@ type Task struct {
 
 func AddTask(task *Task) (int64, error) {
 	query := `INSERT INTO scheduler (date, title, comment, repeat) VALUES (:date, :title, :comment, :repeat)`
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Fatal("error acces to database %w", err)
-		return 0, fmt.Errorf(`incorrect id for updating task %w`, err)
-	}
-	defer db.Close()
-	res, err := db.Exec(query,
+	res, err := DB.Exec(query,
 		sql.Named("date", task.Date),
 		sql.Named("title", task.Title),
 		sql.Named("comment", task.Comment),
@@ -39,15 +32,10 @@ func AddTask(task *Task) (int64, error) {
 }
 
 func Tasks(limit int) ([]*Task, error) {
+
 	tasks := make([]*Task, 0)
 	query := `SELECT id, date, title, comment, repeat from scheduler ORDER BY date DESC LIMIT :limit`
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Fatal("error acces to database %w", err)
-		return tasks, fmt.Errorf(`incorrect id for updating task %w`, err)
-	}
-	defer db.Close()
-	rows, err := db.Query(query, sql.Named("limit", limit))
+	rows, err := DB.Query(query, sql.Named("limit", limit))
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +53,7 @@ func Tasks(limit int) ([]*Task, error) {
 func UpdateTask(task *Task) error {
 
 	query := `UPDATE scheduler SET date = :date,  title = :title, comment = :comment, repeat = :repeat WHERE id = :id`
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		return fmt.Errorf(`error acces to database %w`, err)
-	}
-	defer db.Close()
-	res, err := db.Exec(query,
+	res, err := DB.Exec(query,
 		sql.Named("date", task.Date),
 		sql.Named("title", task.Title),
 		sql.Named("comment", task.Comment),
@@ -87,15 +70,8 @@ func UpdateTask(task *Task) error {
 }
 
 func DeleteTask(task *Task) error {
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		return fmt.Errorf(`error acces to database %w`, err)
-	}
-	defer db.Close()
-
 	query := `DELETE FROM scheduler WHERE id = :id`
-
-	res, err := db.Exec(query, sql.Named("id", task.ID))
+	res, err := DB.Exec(query, sql.Named("id", task.ID))
 	if err != nil {
 		return fmt.Errorf(`error in task deleting from db`)
 	}
@@ -111,13 +87,7 @@ func DeleteTask(task *Task) error {
 
 func GetTask(t *Task) error {
 	query := `SELECT id, date, title, comment, repeat from scheduler WHERE id = :id`
-	db, err := sql.Open("sqlite", "scheduler.db")
-	if err != nil {
-		log.Fatal("error acces to database %w", err)
-		return err
-	}
-	defer db.Close()
-	err = db.QueryRow(query, sql.Named("id", t.ID)).Scan(
+	err := DB.QueryRow(query, sql.Named("id", t.ID)).Scan(
 		&t.ID,
 		&t.Date,
 		&t.Title,

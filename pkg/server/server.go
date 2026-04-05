@@ -39,9 +39,6 @@ func NewHttpServer(logger *log.Logger) *Server {
 		Srv: &http.Server{
 			Addr:    ":7540",
 			Handler: wrappedMux,
-			// ReadTimeout:  5 * time.Second,
-			// WriteTimeout: 10 * time.Second,
-			// IdleTimeout:  15 * time.Second,
 		},
 	}
 	return &server

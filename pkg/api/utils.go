@@ -2,7 +2,7 @@ package api
 
 import (
 	"errors"
-	"net/http"
+	"final2026/pkg/db"
 	"strconv"
 	"strings"
 	"time"
@@ -56,24 +56,36 @@ func AfterNow(date, now time.Time) bool {
 	return false
 }
 
-func NextDateHandler(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method != http.MethodGet {
-		http.Error(w, "only GET requests allowed", http.StatusBadRequest)
-		return
+func checkDate(task *db.Task) error {
+	now := time.Now()
+	if len(task.Date) == 0 {
+		task.Date = now.Format(DATEFORMAT)
 	}
-
-	now, err := time.Parse(DATEFORMAT, r.FormValue("now"))
+	t, err := time.Parse(DATEFORMAT, task.Date)
 	if err != nil {
-		now = time.Now()
+		return err
 	}
-	nDate, err := NextDate(now, r.FormValue("date"), r.FormValue("repeat"))
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	next, err := NextDate(now, task.Date, task.Repeat)
 	if err != nil {
-		http.Error(w, "Ошибка сервера", http.StatusInternalServerError)
-		return
+		return err
 	}
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(nDate))
+	if AfterNow(now, t) {
+		if len(task.Repeat) == 0 {
+			task.Date = now.Format(DATEFORMAT)
+		} else {
+			task.Date = next
+		}
+	}
+	return nil
+}
 
+func CheckID(id string) bool {
+	_, err := strconv.Atoi(id)
+	if id == "" {
+		return false
+	}
+	if err != nil {
+		return false
+	}
+	return true
 }

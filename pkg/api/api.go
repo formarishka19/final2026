@@ -1,11 +1,12 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const DATEFORMAT = "20060102"
 
 func taskHandler(w http.ResponseWriter, r *http.Request) {
-
 	switch r.Method {
 	case http.MethodPost:
 		AddTaskHandler(w, r)
@@ -16,35 +17,13 @@ func taskHandler(w http.ResponseWriter, r *http.Request) {
 	case http.MethodDelete:
 		DeleteTaskHandler(w, r)
 	default:
-		http.Error(w, "method not allowed", http.StatusBadRequest)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
-
-}
-func taskListkHandler(w http.ResponseWriter, r *http.Request) {
-
-	switch r.Method {
-	case http.MethodGet:
-		ListTaskHandler(w, r)
-	default:
-		http.Error(w, "only GET requests allowed", http.StatusBadRequest)
-	}
-
-}
-
-func taskDoneHandler(w http.ResponseWriter, r *http.Request) {
-
-	switch r.Method {
-	case http.MethodPost:
-		DoneTaskHandler(w, r)
-	default:
-		http.Error(w, "only POST requests allowed", http.StatusBadRequest)
-	}
-
 }
 
 func Init(mux *http.ServeMux) {
 	mux.HandleFunc("/api/nextdate", NextDateHandler)
 	mux.HandleFunc("/api/task", taskHandler)
-	mux.HandleFunc("/api/tasks", taskListkHandler)
-	mux.HandleFunc("/api/task/done", taskDoneHandler)
+	mux.HandleFunc("/api/task/done", DoneTaskHandler)
+	mux.HandleFunc("/api/tasks", ListTaskHandler)
 }
